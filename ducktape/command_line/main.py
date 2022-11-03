@@ -112,6 +112,14 @@ def main():
             print("parameters are not valid json: " + str(e))
             sys.exit(1)
 
+    default_parameters = None
+    if args_dict["default_parameters"]:
+        try:
+            default_parameters = json.loads(args_dict["default_parameters"])
+        except ValueError as e:
+            print("Default parameters are not valid json: " + str(e))
+            sys.exit(1)
+
     args_dict["globals"] = get_user_defined_globals(args_dict.get("globals"))
 
     # Make .ducktape directory where metadata such as the last used session_id is stored
@@ -131,7 +139,7 @@ def main():
 
     # Discover and load tests to be run
     loader = TestLoader(session_context, session_logger, repeat=args_dict["repeat"], injected_args=injected_args,
-                        subset=args_dict["subset"], subsets=args_dict["subsets"])
+                        subset=args_dict["subset"], subsets=args_dict["subsets"], default_parameters=default_parameters)
     try:
         tests = loader.load(args_dict["test_path"], excluded_test_symbols=args_dict['exclude'])
     except LoaderException as e:

@@ -52,7 +52,7 @@ class TestLoader(object):
     """Class used to discover and load tests."""
 
     def __init__(self, session_context, logger, repeat=1, injected_args=None, cluster=None, subset=0, subsets=1,
-                 historical_report=None):
+                 historical_report=None, default_parameters=None):
         self.session_context = session_context
         self.cluster = cluster
         assert logger is not None
@@ -74,6 +74,7 @@ class TestLoader(object):
         # A non-None value here means the loader will override the injected_args
         # in any discovered test, whether or not it is parametrized
         self.injected_args = injected_args
+        self.default_parameters = default_parameters
 
     def load(self, symbols, excluded_test_symbols=None):
         """
@@ -374,7 +375,7 @@ class TestLoader(object):
             t_ctx.function,
             t_ctx.file,
             t_ctx.cluster)
-        return expander.expand(self.injected_args)
+        return expander.expand(self.injected_args, self.default_parameters)
 
     def _find_test_files(self, path_or_glob):
         """

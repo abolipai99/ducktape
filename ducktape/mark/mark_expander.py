@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from ._mark import parametrized, Parametrize, _is_parametrize_mark
+from ._mark import parametrized, Parametrize, Defaults, _is_parametrize_mark, defaults
 from ducktape.tests.test import TestContext
 
 
@@ -29,7 +29,7 @@ class MarkedFunctionExpander(object):
         else:
             self.context_list = [self.seed_context]
 
-    def expand(self, test_parameters=None):
+    def expand(self, test_parameters=None, default_parameters=None):
         """Inspect self.function for marks, and expand into a list of test context objects useable by the test runner.
         """
         f = self.seed_context.function
@@ -37,10 +37,19 @@ class MarkedFunctionExpander(object):
         # If the user has specified that they want to run tests with specific parameters, apply the parameters first,
         # then subsequently strip any parametrization decorators. Otherwise, everything gets applied normally.
         if test_parameters is not None:
+            self.context_list = []
             self.context_list = Parametrize(**test_parameters).apply(self.seed_context, self.context_list)
+
+        if default_parameters is not None:
+            self.context_list = []
 
         for m in getattr(f, "marks", []):
             if test_parameters is None or not _is_parametrize_mark(m):
+                print(f"Self context list - {self.context_list}")
+                print(f"Value of m - {m}")
+                if not _is_parametrize_mark(m) and default_parameters is not None:
+                    print("Applying default now")
+                    self.context_list = Defaults(**default_parameters).apply(self.seed_context, self.context_list)
                 self.context_list = m.apply(self.seed_context, self.context_list)
 
         return self.context_list
